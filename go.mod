@@ -1,8 +1,9 @@
-module go.jtlabs.io/mongo
+module sirotsinskuy/mongo
 
 go 1.17
 
 require (
+	go.jtlabs.io/mongo v1.4.0
 	go.jtlabs.io/query v1.5.0
 	go.mongodb.org/mongo-driver v1.10.2
 )

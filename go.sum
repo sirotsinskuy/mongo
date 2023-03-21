@@ -32,6 +32,8 @@ github.com/xdg-go/stringprep v1.0.3/go.mod h1:W3f5j4i+9rC0kuIEJL0ky1VpHXQU3ocBgk
 github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d/go.mod h1:rHwXgn7JulP+udvsHwJoVG1YGAP6VLg4y9I5dyZdqmA=
 github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a h1:fZHgsYlfvtyqToslyjUt3VOPF4J7aK/3MPcK7xp3PDk=
 github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a/go.mod h1:ul22v+Nro/R083muKhosV54bj5niojjWZvU8xrevuH4=
+go.jtlabs.io/mongo v1.4.0 h1:LI+p7ztTJQBeo2I5sJN06eXu69b3YMvoGlDPvDL+ZJk=
+go.jtlabs.io/mongo v1.4.0/go.mod h1:qtdwz8khAaXvj+xmcyqFzizjoSplA/4mR8IiFNNgJMo=
 go.jtlabs.io/query v1.5.0 h1:EQ8LrTE1xqCRPNZuCk3bPw1W4RoHopL1FsEGhjVn8cc=
 go.jtlabs.io/query v1.5.0/go.mod h1:f8dSkRDHmzfC0EJBm/fHNe4f0EUR8DuNYzSJSacSrBc=
 go.mongodb.org/mongo-driver v1.10.2 h1:4Wk3cnqOrQCn0P92L3/mmurMxzdvWWs5J9jinAVKD+k=
