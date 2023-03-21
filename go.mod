@@ -1,4 +1,4 @@
-module sirotsinskuy/mongo
+module github.com/sirotsinskuy/mongo
 
 go 1.17
 
