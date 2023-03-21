@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,12 +21,14 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 		return nil
 	}
 
-	// if values is greater than 0, use an $in clause
+	// if values is greater than 0, use an $in/$nin clause
 	if len(values) > 1 {
 		a := bson.A{}
 
+		parsedValues, operator := mustDetectNotInOperator(values)
+
 		// add each string value to the bson.A
-		for _, v := range values {
+		for _, v := range parsedValues {
 			dv, _ := time.Parse(time.RFC3339, v)
 			a = append(a, dv)
 		}
@@ -33,7 +36,7 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 		// create a filter with the array of values...
 		filter := bson.M{
 			field: bson.D{primitive.E{
-				Key:   "$in",
+				Key:   operator,
 				Value: a,
 			}},
 		}
@@ -128,6 +131,25 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 
 	// return the filter
 	return bson.M{field: dv}
+}
+
+// mustDetectNotInOperator detects $in for all positive VS $nin for all negative values
+func mustDetectNotInOperator(values []string) (updatedValues []string, operator string) {
+	operator = "$in"
+
+	notInCnt := 0
+	for _, value := range values {
+		if strings.HasPrefix(value, "-") {
+			operator = "$nin"
+			notInCnt++
+		}
+		updatedValues = append(updatedValues, strings.TrimPrefix(value, "-"))
+	}
+	if notInCnt > 0 && notInCnt != len(values) {
+		panic("all elements must me either positive or negative")
+	}
+
+	return updatedValues, operator
 }
 
 func detectNumericComparisonOperator(field string, values []string, numericType string) bson.M {

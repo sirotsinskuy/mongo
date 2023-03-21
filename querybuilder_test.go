@@ -477,6 +477,28 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle date type using $nin operator with array of values",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"sVal1": "date",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[sVal1]=-2020-01-01T12:00:00.000Z,-2020-01-02T12:00:00.000Z",
+			},
+			want: bson.M{
+				"sVal1": bson.D{primitive.E{
+					Key: "$nin",
+					Value: primitive.A{
+						time.Date(2020, time.January, 1, 12, 0, 0, 0, time.UTC),
+						time.Date(2020, time.January, 2, 12, 0, 0, 0, time.UTC)},
+				}},
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle array type and not use $in operator with array of values",
 			fields: fields{
 				collection: "test",
