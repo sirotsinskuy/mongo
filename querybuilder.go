@@ -310,7 +310,7 @@ func (qb QueryBuilder) setSortOptions(fields []string, opts *options.FindOptions
 				}
 			}
 
-			sort = append(sort, bson.E{Key: "field", Value: val})
+			sort = append(sort, bson.E{Key: field, Value: val})
 		}
 
 		opts.SetSort(sort)
