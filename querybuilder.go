@@ -289,7 +289,7 @@ func (qb QueryBuilder) setProjectionOptions(fields []string, opts *options.FindO
 
 func (qb QueryBuilder) setSortOptions(fields []string, opts *options.FindOptions) error {
 	if len(fields) > 0 {
-		sort := map[string]int{}
+		sort := bson.D{}
 		for _, field := range fields {
 			val := 1
 
@@ -310,7 +310,7 @@ func (qb QueryBuilder) setSortOptions(fields []string, opts *options.FindOptions
 				}
 			}
 
-			sort[field] = val
+			sort = append(sort, bson.E{Key: "field", Value: val})
 		}
 
 		opts.SetSort(sort)
