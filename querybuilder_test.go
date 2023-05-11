@@ -274,6 +274,43 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle numeric values with range (><) operator",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"iVal1": "int",
+					"iVal2": "decimal",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[iVal1]=><1,4&filter[iVal2]=><1.1,2.2",
+			},
+			want: bson.M{
+				"iVal1": bson.D{
+					primitive.E{
+						Key:   "$gte",
+						Value: int32(1),
+					},
+					primitive.E{
+						Key:   "$lte",
+						Value: int32(4),
+					},
+				},
+				"iVal2": bson.D{
+					primitive.E{
+						Key:   "$gte",
+						Value: float32(1.1),
+					},
+					primitive.E{
+						Key:   "$lte",
+						Value: float32(2.2),
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle numeric operators (lt, lte, gt, gte, ne)",
 			fields: fields{
 				collection: "test",

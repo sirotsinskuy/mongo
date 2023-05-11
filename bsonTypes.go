@@ -173,9 +173,14 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 
 	// handle when values is an array
 	if len(values) > 1 {
+		rangeFilterUsed := false
 		a := bson.A{}
 
 		for _, value := range values {
+			if strings.HasPrefix(value, "><") {
+				rangeFilterUsed = true
+				value = strings.TrimPrefix(value, "><")
+			}
 			var pv interface{}
 			if numericType == "decimal" || numericType == "double" {
 				v, _ := strconv.ParseFloat(value, bitSize)
@@ -199,6 +204,20 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 		}
 
 		// return a filter with the array of values...
+		if rangeFilterUsed && len(a) == 2 {
+			return bson.M{
+				field: bson.D{
+					primitive.E{
+						Key:   "$gte",
+						Value: a[0],
+					},
+					primitive.E{
+						Key:   "$lte",
+						Value: a[1],
+					},
+				},
+			}
+		}
 		return bson.M{
 			field: bson.D{primitive.E{
 				Key:   "$in",
