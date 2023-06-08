@@ -274,6 +274,33 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle $or operator for regexp",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"iVal1": "string",
+					"iVal2": "string",
+					"iVal3": "string",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[iVal1]=||*test*&filter[iVal2]=||*test2*&filter[iVal3]=test3",
+			},
+			want: bson.M{
+				"$or": bson.A{
+					bson.M{
+						"iVal1": primitive.Regex{Pattern: "test", Options: "i"},
+					},
+					bson.M{
+						"iVal2": primitive.Regex{Pattern: "test2", Options: "i"},
+					},
+				},
+				"iVal3": "test3",
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle numeric values with range (><) operator",
 			fields: fields{
 				collection: "test",

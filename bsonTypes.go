@@ -397,16 +397,22 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	}
 
 	bw := false
-	c := false
+	containsOperator := false
 	em := false
 	ew := false
 	ne := false
+	orOperator := false
+
+	if value[0:2] == "||" {
+		orOperator = true
+		value = value[2:]
+	}
 
 	// check for prefix/suffix on the value string
 	if len(value) > 1 {
 		bw = value[len(value)-1:] == "*"
 		ew = value[0:1] == "*"
-		c = bw && ew
+		containsOperator = bw && ew
 		ne = value[0:1] == "-"
 
 		// adjust value when not equal...
@@ -418,10 +424,26 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 			value = value[0 : len(value)-1]
 		}
 
-		if c {
+		if containsOperator {
 			bw = false
 			ew = false
 		}
+	}
+
+	// "OR" handling
+	if orOperator {
+		//TODO handle other regexp cases as well
+		if containsOperator {
+			return bson.M{"$or": bson.M{
+				field: primitive.Regex{
+					Pattern: value,
+					Options: "i",
+				},
+			}}
+		}
+		return bson.M{"$or": bson.M{
+			field: value,
+		}}
 	}
 
 	// check for != or string in quotes
@@ -460,7 +482,7 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	}
 
 	// contains...
-	if c {
+	if containsOperator {
 		return bson.M{field: primitive.Regex{
 			Pattern: value,
 			Options: "i",
@@ -497,6 +519,13 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 
 func combine(a bson.M, b bson.M) bson.M {
 	for k, v := range b {
+		if k == "$or" {
+			if a[k] == nil {
+				a[k] = bson.A{}
+			}
+			a[k] = append(a[k].(bson.A), v)
+			continue
+		}
 		a[k] = v
 	}
 
