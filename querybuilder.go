@@ -105,10 +105,10 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 
 					var f primitive.M
 					if usedNe {
-						f = primitive.M{field: bson.D{primitive.E{
+						f = primitive.M{field: primitive.E{
 							Key:   "$ne",
 							Value: bv,
-						}}}
+						}}
 					} else {
 						f = primitive.M{field: bv}
 					}
