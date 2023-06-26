@@ -411,9 +411,8 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			},
 			want: bson.M{
 				"bVal1": true,
-				"bVal2": primitive.E{
-					Key:   "$ne",
-					Value: false,
+				"bVal2": primitive.M{
+					"$ne": false,
 				}},
 			wantErr: false,
 		},
