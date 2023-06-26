@@ -397,6 +397,27 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle bool types with $ne",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"bVal1": "bool",
+					"bVal2": "bool",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[bVal1]=true&filter[bVal2]=-false",
+			},
+			want: bson.M{
+				"bVal1": true,
+				"bVal2": bson.D{primitive.E{
+					Key:   "$ne",
+					Value: false,
+				}}},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle date types",
 			fields: fields{
 				collection: "test",

@@ -3,6 +3,7 @@ package querybuilder
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	queryoptions "go.jtlabs.io/query"
 	"go.mongodb.org/mongo-driver/bson"
@@ -94,8 +95,23 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 				filter = combine(filter, f)
 			case "bool":
 				for _, value := range values {
+					usedNe := false
+					if strings.HasPrefix(value, "-") {
+						usedNe = true
+						value = strings.TrimPrefix(value, "-")
+					}
+
 					bv, _ := strconv.ParseBool(value)
-					f := primitive.M{field: bv}
+
+					var f primitive.M
+					if usedNe {
+						f = primitive.M{field: bson.D{primitive.E{
+							Key:   "$ne",
+							Value: bv,
+						}}}
+					} else {
+						f = primitive.M{field: bv}
+					}
 					filter = combine(filter, f)
 				}
 			case "date":
