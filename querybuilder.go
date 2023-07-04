@@ -149,26 +149,19 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 }
 
 func detectGeoComparisonOperator(field string, values []string) bson.M {
-	if len(values) != 1 {
-		panic("incorrect value: not single val")
+	if len(values) != 3 {
+		panic("incorrect value: not 3 val")
 	}
 
-	val := values[0]
-	split := strings.Split(val, ",")
-
-	if len(split) != 3 {
-		panic("incorrect value: not 3 parts")
-	}
-
-	lat, err := strconv.ParseFloat(split[0], 64)
+	lat, err := strconv.ParseFloat(values[0], 64)
 	if err != nil {
 		panic("incorrect value: part 1 is not float")
 	}
-	lon, err := strconv.ParseFloat(split[1], 64)
+	lon, err := strconv.ParseFloat(values[1], 64)
 	if err != nil {
 		panic("incorrect value: part 2 is not float")
 	}
-	radius, err := strconv.ParseFloat(split[2], 64)
+	radius, err := strconv.ParseFloat(values[2], 64)
 	if err != nil {
 		panic("incorrect value: part 3 is not float")
 	}
