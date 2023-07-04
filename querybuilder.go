@@ -167,7 +167,7 @@ func detectGeoComparisonOperator(field string, values []string) bson.M {
 	}
 
 	return bson.M{field: bson.D{primitive.E{
-		Key: "$near",
+		Key: "$nearSphere",
 		Value: bson.D{
 			bson.E{Key: "$geometry", Value: bson.M{
 				"type":        "Point",
