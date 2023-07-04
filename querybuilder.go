@@ -166,16 +166,14 @@ func detectGeoComparisonOperator(field string, values []string) bson.M {
 		panic("incorrect value: part 3 is not float")
 	}
 
-	return bson.M{field: bson.D{primitive.E{
-		Key: "$nearSphere",
-		Value: bson.D{
-			bson.E{Key: "$geometry", Value: bson.M{
+	return bson.M{field: bson.M{
+		"$nearSphere": bson.M{
+			"$geometry": bson.M{
 				"type":        "Point",
 				"coordinates": []float64{lat, lon},
-			}},
-			bson.E{Key: "$maxDistance", Value: radius},
-		},
-	}}}
+			},
+			"$maxDistance": radius,
+		}}}
 }
 
 // FindOptions creates a mongo.FindOptions struct with pagination details, sorting,
