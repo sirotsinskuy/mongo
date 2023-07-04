@@ -138,11 +138,51 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 				// handle just like dates
 				f := detectDateComparisonOperator(field, values)
 				filter = combine(filter, f)
+			case "geo":
+				f := detectGeoComparisonOperator(field, values)
+				filter = combine(filter, f)
 			}
 		}
 	}
 
 	return filter, nil
+}
+
+func detectGeoComparisonOperator(field string, values []string) bson.M {
+	if len(values) != 1 {
+		panic("incorrect value: not single val")
+	}
+
+	val := values[0]
+	split := strings.Split(val, ",")
+
+	if len(split) != 3 {
+		panic("incorrect value: not 3 parts")
+	}
+
+	lat, err := strconv.ParseFloat(split[0], 64)
+	if err != nil {
+		panic("incorrect value: part 1 is not float")
+	}
+	lon, err := strconv.ParseFloat(split[1], 64)
+	if err != nil {
+		panic("incorrect value: part 2 is not float")
+	}
+	radius, err := strconv.ParseFloat(split[2], 64)
+	if err != nil {
+		panic("incorrect value: part 3 is not float")
+	}
+
+	return bson.M{field: bson.D{primitive.E{
+		Key: "$near",
+		Value: bson.D{
+			bson.E{Key: "$geometry", Value: bson.M{
+				"type":        "Point",
+				"coordinates": []float64{lat, lon},
+			}},
+			bson.E{Key: "$maxDistance", Value: radius},
+		},
+	}}}
 }
 
 // FindOptions creates a mongo.FindOptions struct with pagination details, sorting,
