@@ -35,7 +35,11 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 				v = strings.TrimPrefix(v, "><")
 			}
 
-			dv, _ := time.Parse(time.RFC3339, v)
+			dv, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(dv)
 			a = append(a, dv)
 		}
 
@@ -53,6 +57,8 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 					},
 				},
 			}
+		} else {
+			fmt.Println("not range")
 		}
 
 		// create a filter with the array of values...
