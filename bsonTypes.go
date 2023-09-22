@@ -28,9 +28,31 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 		parsedValues, operator := mustDetectNotInOperator(values)
 
 		// add each string value to the bson.A
+		rangeFilterUsed := false
 		for _, v := range parsedValues {
+			if strings.HasPrefix(v, "><") {
+				rangeFilterUsed = true
+				v = strings.TrimPrefix(v, "><")
+			}
+
 			dv, _ := time.Parse(time.RFC3339, v)
 			a = append(a, dv)
+		}
+
+		// return a filter with the array of values...
+		if rangeFilterUsed && len(a) == 2 {
+			return bson.M{
+				field: bson.D{
+					primitive.E{
+						Key:   "$gte",
+						Value: a[0],
+					},
+					primitive.E{
+						Key:   "$lte",
+						Value: a[1],
+					},
+				},
+			}
 		}
 
 		// create a filter with the array of values...

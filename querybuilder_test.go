@@ -486,6 +486,43 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle range operator on date types",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"dVal1": "date",
+					"dVal2": "date",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[dVal1]=><2020-01-01T12:00:00.000Z,2021-02-16T02:04:05.000Z&filter[dVal2]=><2021-02-16T02:04:05.000Z,2021-02-16T02:04:05.000Z",
+			},
+			want: bson.M{
+				"dVal1": bson.D{
+					primitive.E{
+						Key:   "$gte",
+						Value: time.Date(2020, time.January, 1, 12, 0, 0, 0, time.UTC),
+					},
+					primitive.E{
+						Key:   "$lte",
+						Value: time.Date(2021, time.February, 16, 2, 4, 5, 0, time.UTC),
+					},
+				},
+				"dVal2": bson.D{
+					primitive.E{
+						Key:   "$gte",
+						Value: time.Date(2021, time.February, 16, 2, 4, 5, 0, time.UTC),
+					},
+					primitive.E{
+						Key:   "$lte",
+						Value: time.Date(2021, time.February, 16, 2, 4, 5, 0, time.UTC),
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle timestamp types",
 			fields: fields{
 				collection: "test",
