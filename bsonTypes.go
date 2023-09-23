@@ -13,7 +13,7 @@ import (
 
 var (
 	reNull = regexp.MustCompile(`null`)
-	reWord = regexp.MustCompile(`\w+`)
+	reWord = regexp.MustCompile(`\p{L}+$|[0-9]+`)
 )
 
 func detectDateComparisonOperator(field string, values []string) bson.M {
