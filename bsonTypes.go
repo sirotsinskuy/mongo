@@ -202,12 +202,16 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 	// handle when values is an array
 	if len(values) > 1 {
 		rangeFilterUsed := false
+		allFilterUsed := false
 		a := bson.A{}
 
 		for _, value := range values {
 			if strings.HasPrefix(value, "><") {
 				rangeFilterUsed = true
 				value = strings.TrimPrefix(value, "><")
+			} else if strings.HasPrefix(value, "{}") {
+				allFilterUsed = true
+				value = strings.TrimPrefix(value, "{}")
 			}
 			var pv interface{}
 			if numericType == "decimal" || numericType == "double" {
@@ -246,6 +250,19 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 				},
 			}
 		}
+
+		// return a filter with the array of values...
+		if allFilterUsed {
+			return bson.M{
+				field: bson.D{
+					primitive.E{
+						Key:   "$all",
+						Value: a,
+					},
+				},
+			}
+		}
+
 		return bson.M{
 			field: bson.D{primitive.E{
 				Key:   "$in",
@@ -397,11 +414,29 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 
 	// if values is greater than 0, use an $in clause
 	if len(values) > 1 {
+		allFilterUsed := false
+
 		a := bson.A{}
 
 		// add each string value to the bson.A
 		for _, v := range values {
+			if strings.HasPrefix(v, "{}") {
+				allFilterUsed = true
+				v = strings.TrimPrefix(v, "{}")
+			}
 			a = append(a, v)
+		}
+
+		// return a filter with the array of values...
+		if allFilterUsed {
+			return bson.M{
+				field: bson.D{
+					primitive.E{
+						Key:   "$all",
+						Value: a,
+					},
+				},
+			}
 		}
 
 		// when type is an array, don't use $in operator

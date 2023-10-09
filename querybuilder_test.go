@@ -274,6 +274,26 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle numeric values with $all operator",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"iVal1": "int",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[iVal1]={}0,1,2,3,4,5",
+			},
+			want: bson.M{
+				"iVal1": bson.D{primitive.E{
+					Key:   "$all",
+					Value: primitive.A{int32(0), int32(1), int32(2), int32(3), int32(4), int32(5)},
+				}},
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle $or operator for regexp",
 			fields: fields{
 				collection: "test",
