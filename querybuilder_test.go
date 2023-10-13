@@ -321,6 +321,36 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle $or operator for date and number",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"iVal1": "date",
+					"iVal2": "int",
+					"iVal3": "string",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[iVal1]=||>2020-01-01T12:00:00.000Z&filter[iVal2]=||100&filter[iVal3]=test3",
+			},
+			want: bson.M{
+				"$or": bson.A{
+					bson.M{
+						"iVal1": bson.E{
+							Key:   "$gt",
+							Value: time.Date(2020, time.January, 1, 12, 0, 0, 0, time.UTC),
+						},
+					},
+					bson.M{
+						"iVal2": int32(100),
+					},
+				},
+				"iVal3": "test3",
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle numeric values with range (><) operator",
 			fields: fields{
 				collection: "test",

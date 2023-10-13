@@ -76,6 +76,12 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 	value := values[0]
 	var oper string
 
+	orOperator := false
+	if value[0:2] == "||" {
+		orOperator = true
+		value = value[2:]
+	}
+
 	// check if string value is long enough for a 2 char prefix
 	if len(value) >= 3 {
 		var uv string
@@ -148,6 +154,18 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 
 	// parse the date value
 	dv, _ := time.Parse(time.RFC3339, value)
+
+	// "OR" handling
+	if orOperator {
+		if oper != "" {
+			return bson.M{"$or": bson.M{
+				field: primitive.E{Key: oper, Value: dv},
+			}}
+		}
+		return bson.M{"$or": bson.M{
+			field: dv,
+		}}
+	}
 
 	// check if there is an lt, lte, gt or gte key
 	if oper != "" {
@@ -274,6 +292,12 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 	var oper string
 	value := values[0]
 
+	orOperator := false
+	if value[0:2] == "||" {
+		orOperator = true
+		value = value[2:]
+	}
+
 	// check if string value is long enough for a 2 char prefix
 	if len(value) >= 3 {
 		var uv string
@@ -362,6 +386,13 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 		if bitSize == 32 {
 			parsedValue = int32(v)
 		}
+	}
+
+	// "OR" handling
+	if orOperator {
+		return bson.M{"$or": bson.M{
+			field: parsedValue,
+		}}
 	}
 
 	// check if there is an lt, lte, gt or gte key
