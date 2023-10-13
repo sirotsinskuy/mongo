@@ -390,6 +390,14 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 
 	// "OR" handling
 	if orOperator {
+		if oper != "" {
+			return bson.M{"$or": bson.M{
+				field: primitive.E{
+					Key:   oper,
+					Value: parsedValue,
+				},
+			}}
+		}
 		return bson.M{"$or": bson.M{
 			field: parsedValue,
 		}}
