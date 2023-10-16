@@ -480,6 +480,23 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle simple numeric",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"bVal1": "int",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[bVal1]=1",
+			},
+			want: bson.M{
+				"bVal1": int32(1),
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle bool types with $ne",
 			fields: fields{
 				collection: "test",

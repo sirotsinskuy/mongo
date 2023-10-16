@@ -77,7 +77,7 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 	var oper string
 
 	orOperator := false
-	if value[0:2] == "||" {
+	if len(value) > 2 && value[0:2] == "||" {
 		orOperator = true
 		value = value[2:]
 	}
@@ -293,7 +293,7 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 	value := values[0]
 
 	orOperator := false
-	if value[0:2] == "||" {
+	if len(value) > 2 && value[0:2] == "||" {
 		orOperator = true
 		value = value[2:]
 	}
@@ -505,7 +505,7 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	ne := false
 	orOperator := false
 
-	if value[0:2] == "||" {
+	if len(value) > 2 && value[0:2] == "||" {
 		orOperator = true
 		value = value[2:]
 	}
