@@ -150,7 +150,7 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 
 func detectGeoComparisonOperator(field string, values []string) bson.M {
 	switch len(values) {
-	case 4:
+	case 5:
 		return processBoxOperator(field, values)
 	case 3:
 		lat, err := strconv.ParseFloat(values[0], 64)
