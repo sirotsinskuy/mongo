@@ -149,30 +149,60 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 }
 
 func detectGeoComparisonOperator(field string, values []string) bson.M {
-	if len(values) != 3 {
-		panic("incorrect value: not 3 val")
-	}
+	switch len(values) {
+	case 4:
+		return processBoxOperator(field, values)
+	case 3:
+		lat, err := strconv.ParseFloat(values[0], 64)
+		if err != nil {
+			panic("incorrect value: part 1 is not float")
+		}
+		lon, err := strconv.ParseFloat(values[1], 64)
+		if err != nil {
+			panic("incorrect value: part 2 is not float")
+		}
+		radius, err := strconv.ParseFloat(values[2], 64)
+		if err != nil {
+			panic("incorrect value: part 3 is not float")
+		}
 
-	lat, err := strconv.ParseFloat(values[0], 64)
+		return bson.M{field: bson.M{
+			"$nearSphere": bson.M{
+				"$geometry": bson.M{
+					"type":        "Point",
+					"coordinates": []float64{lat, lon},
+				},
+				"$maxDistance": radius,
+			}}}
+	default:
+		panic("incorrect value: not 3 or 4 val")
+	}
+}
+
+func processBoxOperator(field string, values []string) bson.M {
+	lat1, err := strconv.ParseFloat(values[0], 64)
 	if err != nil {
 		panic("incorrect value: part 1 is not float")
 	}
-	lon, err := strconv.ParseFloat(values[1], 64)
+	lon1, err := strconv.ParseFloat(values[1], 64)
 	if err != nil {
 		panic("incorrect value: part 2 is not float")
 	}
-	radius, err := strconv.ParseFloat(values[2], 64)
+	lat2, err := strconv.ParseFloat(values[2], 64)
 	if err != nil {
 		panic("incorrect value: part 3 is not float")
 	}
+	lon2, err := strconv.ParseFloat(values[3], 64)
+	if err != nil {
+		panic("incorrect value: part 4 is not float")
+	}
 
 	return bson.M{field: bson.M{
-		"$nearSphere": bson.M{
-			"$geometry": bson.M{
-				"type":        "Point",
-				"coordinates": []float64{lat, lon},
+		"$geoWithin": bson.M{
+			"$box": bson.A{
+				[]float64{lat1, lon1},
+				[]float64{lat2, lon2},
 			},
-			"$maxDistance": radius,
 		}}}
 }
 
