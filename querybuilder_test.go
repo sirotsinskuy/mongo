@@ -461,6 +461,26 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle numeric operators (lt, lte, gt, gte, ne) with array",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"iVal1": "int",
+				},
+				strictValidation: false,
+			},
+			args: args{
+				qs: "filter[iVal1.1]=%3C4",
+			},
+			want: bson.M{
+				"iVal1.1": bson.D{primitive.E{
+					Key:   "$lt",
+					Value: int32(4),
+				}},
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle bool types",
 			fields: fields{
 				collection: "test",
