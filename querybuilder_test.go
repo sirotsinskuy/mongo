@@ -470,7 +470,7 @@ func TestQueryBuilder_Filter(t *testing.T) {
 				strictValidation: false,
 			},
 			args: args{
-				qs: "filter[iVal1.1]=%3C4",
+				qs: "filter[iVal1[]1]=%3C4",
 			},
 			want: bson.M{
 				"iVal1.1": bson.D{primitive.E{

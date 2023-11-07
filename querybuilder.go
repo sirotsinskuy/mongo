@@ -78,7 +78,7 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 	if len(qo.Filter) > 0 {
 		for field, values := range qo.Filter {
 			// handle array fields
-			fiendNameWithNoIdx := strings.Split(field, ".")[0]
+			fiendNameWithNoIdx := strings.Split(field, "[]")[0]
 
 			var bsonType string
 
@@ -91,6 +91,8 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 			if bsonType == "" && qb.strictValidation {
 				return nil, fmt.Errorf("field %s does not exist in collection %s", fiendNameWithNoIdx, qb.collection)
 			}
+
+			field = strings.ReplaceAll(field, "[]", ".")
 
 			switch bsonType {
 			case "array":
@@ -347,11 +349,12 @@ func (qb QueryBuilder) setProjectionOptions(fields []string, opts *options.FindO
 
 			// lookup field in the fieldTypes dictionary if strictValidation is true
 			if qb.strictValidation {
-				field = strings.Split(field, ".")[0]
+				field = strings.Split(field, "[]")[0]
 				if _, ok := qb.fieldTypes[field]; !ok {
 					// we have a problem
 					return fmt.Errorf("field %s does not exist in collection %s", field, qb.collection)
 				}
+				field = strings.ReplaceAll(field, "[]", ".")
 			}
 
 			// add the field to the project dictionary
@@ -384,11 +387,12 @@ func (qb QueryBuilder) setSortOptions(fields []string, opts *options.FindOptions
 
 			// lookup field in the fieldTypes dictionary if strictValidation is true
 			if qb.strictValidation {
-				fiendNameWithNoIdx := strings.Split(field, ".")[0]
+				fiendNameWithNoIdx := strings.Split(field, "[]")[0]
 				if _, ok := qb.fieldTypes[fiendNameWithNoIdx]; !ok {
 					// we have a problem
 					return fmt.Errorf("field %s does not exist in collection %s", fiendNameWithNoIdx, qb.collection)
 				}
+				field = strings.ReplaceAll(field, "[]", ".")
 			}
 
 			sort = append(sort, bson.E{Key: field, Value: val})
