@@ -310,10 +310,10 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			want: bson.M{
 				"$or": bson.A{
 					bson.M{
-						"iVal1": primitive.Regex{Pattern: "test", Options: "i"},
+						"iVal1": primitive.Regex{Pattern: "test", Options: "im"},
 					},
 					bson.M{
-						"iVal2": primitive.Regex{Pattern: "test2", Options: "i"},
+						"iVal2": primitive.Regex{Pattern: "test2", Options: "im"},
 					},
 				},
 				"iVal3": "test3",
@@ -777,15 +777,15 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			want: bson.M{
 				"sVal1": primitive.Regex{
 					Pattern: "value$",
-					Options: "i",
+					Options: "im",
 				},
 				"sVal2": primitive.Regex{
 					Pattern: "^value",
-					Options: "i",
+					Options: "im",
 				},
 				"sVal3": primitive.Regex{
 					Pattern: "value",
-					Options: "i",
+					Options: "im",
 				},
 				"sVal4": "value",
 				"sVal5": bson.D{primitive.E{
