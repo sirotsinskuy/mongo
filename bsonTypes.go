@@ -539,7 +539,7 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 			return bson.M{"$or": bson.M{
 				field: primitive.Regex{
 					Pattern: value,
-					Options: "i",
+					Options: "im",
 				},
 			}}
 		}
@@ -587,7 +587,7 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	if containsOperator {
 		return bson.M{field: primitive.Regex{
 			Pattern: value,
-			Options: "i",
+			Options: "im",
 		}}
 	}
 
@@ -595,7 +595,7 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	if bw {
 		return bson.M{field: primitive.Regex{
 			Pattern: fmt.Sprintf("^%s", value),
-			Options: "i",
+			Options: "im",
 		}}
 	}
 
@@ -603,7 +603,7 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	if ew {
 		return bson.M{field: primitive.Regex{
 			Pattern: fmt.Sprintf("%s$", value),
-			Options: "i",
+			Options: "im",
 		}}
 	}
 
