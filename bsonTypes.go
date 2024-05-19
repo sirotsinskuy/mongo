@@ -82,6 +82,12 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 		value = value[2:]
 	}
 
+	elementMatchOperator := false
+	if len(value) > 2 && value[0:2] == "[]" {
+		elementMatchOperator = true
+		value = value[2:]
+	}
+
 	// check if string value is long enough for a 2 char prefix
 	if len(value) >= 3 {
 		var uv string
@@ -153,7 +159,11 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 	}
 
 	// parse the date value
-	dv, _ := time.Parse(time.RFC3339, value)
+	t, _ := time.Parse(time.RFC3339, value)
+	var dv *time.Time
+	if !t.IsZero() {
+		dv = &t
+	}
 
 	// "OR" handling
 	if orOperator {
@@ -165,6 +175,21 @@ func detectDateComparisonOperator(field string, values []string) bson.M {
 		return bson.M{"$or": bson.M{
 			field: dv,
 		}}
+	}
+
+	if elementMatchOperator {
+		// get the parent field name using dot notation
+		split := strings.Split(field, ".")
+		parentField := strings.Join(split[0:len(split)-1], ".")
+		childField := split[len(split)-1]
+
+		return bson.M{
+			parentField: bson.M{
+				"$elemMatch": bson.M{
+					//TODO: this is for Null check, need to handle other cases as well
+					childField: dv,
+				},
+			}}
 	}
 
 	// check if there is an lt, lte, gt or gte key
@@ -298,6 +323,12 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 		value = value[2:]
 	}
 
+	elementMatchOperator := false
+	if len(value) > 2 && value[0:2] == "[]" {
+		elementMatchOperator = true
+		value = value[2:]
+	}
+
 	// check if string value is long enough for a 2 char prefix
 	if len(value) >= 3 {
 		var uv string
@@ -368,23 +399,29 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 
 	// parse the numeric value appropriately
 	var parsedValue interface{}
-	if numericType == "decimal" || numericType == "double" {
-		v, _ := strconv.ParseFloat(value, bitSize)
-		parsedValue = v
+	if value == "nil" {
+		// handle nil keyword
+		parsedValue = nil
+	} else {
+		// parse normal numeric values
+		if numericType == "decimal" || numericType == "double" {
+			v, _ := strconv.ParseFloat(value, bitSize)
+			parsedValue = v
 
-		// retype 32 bit
-		if bitSize == 32 {
-			parsedValue = float32(v)
+			// retype 32 bit
+			if bitSize == 32 {
+				parsedValue = float32(v)
+			}
 		}
-	}
 
-	if parsedValue == nil {
-		v, _ := strconv.ParseInt(value, 0, bitSize)
-		parsedValue = v
+		if parsedValue == nil {
+			v, _ := strconv.ParseInt(value, 0, bitSize)
+			parsedValue = v
 
-		// retype 32 bit
-		if bitSize == 32 {
-			parsedValue = int32(v)
+			// retype 32 bit
+			if bitSize == 32 {
+				parsedValue = int32(v)
+			}
 		}
 	}
 
@@ -401,6 +438,21 @@ func detectNumericComparisonOperator(field string, values []string, numericType 
 		return bson.M{"$or": bson.M{
 			field: parsedValue,
 		}}
+	}
+
+	if elementMatchOperator {
+		// get the parent field name using dot notation
+		split := strings.Split(field, ".")
+		parentField := strings.Join(split[0:len(split)-1], ".")
+		childField := split[len(split)-1]
+
+		return bson.M{
+			parentField: bson.M{
+				"$elemMatch": bson.M{
+					childField: parsedValue,
+				},
+			},
+		}
 	}
 
 	// check if there is an lt, lte, gt or gte key
@@ -504,9 +556,15 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 	ew := false
 	ne := false
 	orOperator := false
+	elementMatchOperator := false
 
 	if len(value) > 2 && value[0:2] == "||" {
 		orOperator = true
+		value = value[2:]
+	}
+
+	if len(value) > 2 && value[0:2] == "[]" {
+		elementMatchOperator = true
 		value = value[2:]
 	}
 
@@ -546,6 +604,26 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 		return bson.M{"$or": bson.M{
 			field: value,
 		}}
+	}
+
+	if elementMatchOperator {
+		// get the parent field name using dot notation
+		split := strings.Split(field, ".")
+		parentField := strings.Join(split[0:len(split)-1], ".")
+		childField := split[len(split)-1]
+
+		v := &value
+		if value == "nil" {
+			// handle nil keyword
+			v = nil
+		}
+		return bson.M{
+			parentField: bson.M{
+				"$elemMatch": bson.M{
+					childField: v,
+				},
+			},
+		}
 	}
 
 	// check for != or string in quotes
@@ -627,6 +705,25 @@ func combine(a bson.M, b bson.M) bson.M {
 			}
 			a[k] = append(a[k].(bson.A), v)
 			continue
+		} else if lvl1Bson, ok := v.(bson.M); ok {
+			// check if the value is an object with a key of "$elemMatch"
+			// if so, we need to append the value to the array
+			added := false
+			for k2, v2 := range lvl1Bson {
+				if k2 == "$elemMatch" {
+					if a == nil || a[k] == nil {
+						a[k] = lvl1Bson
+					} else {
+						a[k] = bson.M{
+							"$elemMatch": combine(a[k].(bson.M)["$elemMatch"].(bson.M), v2.(bson.M)),
+						}
+					}
+					added = true
+				}
+			}
+			if added {
+				continue
+			}
 		}
 		a[k] = v
 	}
