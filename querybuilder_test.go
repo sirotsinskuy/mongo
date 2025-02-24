@@ -319,6 +319,41 @@ func TestQueryBuilder_Filter(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "should properly handle $elemMatch operator using [] for complex arrays with Dates",
+			fields: fields{
+				collection: "test",
+				fieldTypes: map[string]string{
+					"aVal":                  "array",
+					"aVal.innerArray":       "array",
+					"aVal.innerArray.iVal1": "date",
+				},
+			},
+			args: args{
+				qs: "filter[aVal.[*].innerArray.iVal1]=-2020-01-01T12:00:00.000Z,-2020-01-02T12:00:00.000Z",
+			},
+			want: bson.M{
+				"aVal": bson.M{
+					"$elemMatch": bson.M{
+						"$or": bson.A{
+							bson.M{
+								"innerArray.iVal1": bson.E{
+									Key: "$nin",
+									Value: bson.A{
+										time.Date(2020, time.January, 1, 12, 0, 0, 0, time.UTC),
+										time.Date(2020, time.January, 2, 12, 0, 0, 0, time.UTC),
+									},
+								},
+							},
+							bson.M{
+								"innerArray.iVal1": nil,
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "should properly handle $or operator for regexp",
 			fields: fields{
 				collection: "test",

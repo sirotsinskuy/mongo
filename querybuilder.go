@@ -80,6 +80,12 @@ func (qb QueryBuilder) Filter(qo queryoptions.Options) (bson.M, error) {
 			// handle array fields
 			fiendNameWithNoIdx := strings.Split(field, "[]")[0]
 
+			//elemMatchField := false
+			if strings.Contains(field, ".[*]") {
+				fiendNameWithNoIdx = strings.Split(field, ".[*]")[0]
+				//elemMatchField = true
+			}
+
 			var bsonType string
 
 			// lookup the field

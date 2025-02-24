@@ -473,6 +473,30 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 		return nil
 	}
 
+	if strings.Contains(field, ".[*].") {
+		// get the parent field name using dot notation
+		split := strings.Split(field, ".[*].")
+		parentField := split[0]
+		childField := split[1]
+
+		inArrayPart := detectDateComparisonOperator(childField, values)[childField].(bson.D)[0]
+
+		return bson.M{
+			parentField: bson.M{
+				"$elemMatch": bson.M{
+					"$or": bson.A{
+						bson.M{
+							childField: inArrayPart,
+						},
+						bson.M{
+							childField: nil, // allow for null values
+						},
+					},
+				},
+			},
+		}
+	}
+
 	// if bsonType is object, query should use an exists operator
 	if bsonType == "object" {
 		filter := bson.M{}
