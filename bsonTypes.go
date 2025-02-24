@@ -486,7 +486,9 @@ func detectStringComparisonOperator(field string, values []string, bsonType stri
 				"$elemMatch": bson.M{
 					"$or": bson.A{
 						bson.M{
-							childField: inArrayPart,
+							childField: bson.M{
+								inArrayPart.Key: inArrayPart.Value,
+							},
 						},
 						bson.M{
 							childField: nil, // allow for null values

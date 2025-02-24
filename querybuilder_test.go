@@ -336,9 +336,8 @@ func TestQueryBuilder_Filter(t *testing.T) {
 					"$elemMatch": bson.M{
 						"$or": bson.A{
 							bson.M{
-								"innerArray.iVal1": bson.E{
-									Key: "$nin",
-									Value: bson.A{
+								"innerArray.iVal1": bson.M{
+									"$nin": bson.A{
 										time.Date(2020, time.January, 1, 12, 0, 0, 0, time.UTC),
 										time.Date(2020, time.January, 2, 12, 0, 0, 0, time.UTC),
 									},
